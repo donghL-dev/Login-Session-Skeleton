@@ -4,10 +4,15 @@
 ## 목표
 
 - `Spring Security` 를 이용하여 `세션`, `쿠키` 방식으로 인증 구현
+
   - `로그인`, `회원가입` 구현
+
   - `SecurityContextHolder`  에 유저의 `세션` 확인
+  
   - `Rquest` 의 `쿠키` 와 `Session ID` 가 일치한지 확인
+
 - `Spring Security` 를 이용하여 `토큰` 방식으로 인증 구현
+  
   - // 예정
 
 ## 개발환경
