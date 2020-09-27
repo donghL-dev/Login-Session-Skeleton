@@ -13,12 +13,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpSession;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 
+import javax.servlet.http.HttpSession;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -45,6 +47,16 @@ public class AccountControllerTest {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @DisplayName("인증 없이 메인화면에 접근하는 테스트")
+    @Test
+    public void getIndexAuthX() throws Exception {
+        mockMvc.perform(get("/"))
+                .andDo(print())
+                .andExpect(redirectedUrl("http://localhost/sign-in"))
+                .andExpect(status().is3xxRedirection())
+        ;
+    }
 
     @DisplayName("로그인 화면 조회 테스트")
     @Test
@@ -129,13 +141,9 @@ public class AccountControllerTest {
     public void successSignIn() throws Exception {
         String email = "123@email.com";
         String password = "password";
+        saveAccount(email, password);
 
-        accountRepository.save(Account.builder()
-                .email(email)
-                .password(passwordEncoder.encode(password))
-                .build());
-
-        mockMvc.perform(formLogin()
+        ResultActions resultActions = mockMvc.perform(formLogin()
                     .loginProcessingUrl("/sign-in")
                     .user(email)
                     .password(password))
@@ -143,11 +151,23 @@ public class AccountControllerTest {
                 .andExpect(redirectedUrl("/"))
                 .andExpect(status().is3xxRedirection())
         ;
+
+        String redirectedUrl = resultActions.andReturn().getResponse().getRedirectedUrl();
+        assert redirectedUrl != null;
+
+        HttpSession session = resultActions.andReturn().getRequest().getSession();
+        assert session != null;
+
+        mockMvc.perform(get(redirectedUrl)
+                    .session((MockHttpSession) session))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(view().name("index"));
     }
 
     @DisplayName("로그인 실패 테스트")
     @Test
-    public void failureSignIp() throws Exception {
+    public void failureSignIn() throws Exception {
         String email = "123@email.com";
         String password = "password";
 
@@ -159,6 +179,43 @@ public class AccountControllerTest {
                 .andExpect(redirectedUrl("/sign-in?error"))
                 .andExpect(status().is3xxRedirection())
         ;
+    }
+
+    @DisplayName("GET \"/test\" Success")
+    @Test
+    public void getTest() throws Exception {
+        String email = "123@email.com";
+        String password = "password";
+        saveAccount(email, password);
+
+        ResultActions resultActions = mockMvc.perform(get("/test"))
+                .andDo(print())
+                .andExpect(redirectedUrl("http://localhost/sign-in"))
+                .andExpect(status().is3xxRedirection())
+        ;
+
+        String redirectedUrl = resultActions.andReturn().getResponse().getRedirectedUrl();
+        assert redirectedUrl != null;
+
+        HttpSession session = resultActions.andReturn().getRequest().getSession();
+        assert session != null;
+
+        mockMvc.perform(post(redirectedUrl)
+                    .param("username", email)
+                    .param("password", password)
+                    .session((MockHttpSession) session)
+                    .with(csrf()))
+                .andExpect(redirectedUrl("http://localhost/test"))
+                .andExpect(status().is3xxRedirection())
+        ;
+    }
+
+    private void saveAccount(String email, String password) {
+        accountRepository.deleteAll();
+        accountRepository.save(Account.builder()
+                .email(email)
+                .password(passwordEncoder.encode(password))
+                .build());
     }
 
 }

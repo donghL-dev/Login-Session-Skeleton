@@ -18,7 +18,7 @@ $(`.sign-up`).click(function () {
         },
         success: function (data) {
             alert(data['msg']);
-            location.href = '/sign-in';
+            location.href = '/';
         },
         error: function (data) {
             alert(data.responseText);
