@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -25,7 +24,7 @@ public class AccountController {
 
     @GetMapping("/")
     public String getMain(Model model) {
-        User user = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Account user = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         model.addAttribute("name", user.getUsername());
         return "index";
     }
@@ -40,6 +39,12 @@ public class AccountController {
         return "account/sign-up";
     }
 
+    @GetMapping("/sign-up-form")
+    public String getFormSignUp(Model model) {
+        model.addAttribute(new AccountDTO());
+        return "account/sign-up-form";
+    }
+
     @PostMapping("/sign-up")
     public ResponseEntity<?> signUp(@RequestBody @Valid AccountDTO accountDTO, Errors errors) {
         if (errors.hasErrors()) {
@@ -50,6 +55,15 @@ public class AccountController {
 
         accountRepository.save(accountDTO.toEntity(passwordEncoder.encode(accountDTO.getPassword())));
         return new ResponseEntity<>("{\"msg\" : \"회원가입 성공!\"}", HttpStatus.CREATED);
+    }
+
+    @PostMapping("/sign-up-form")
+    public String signUpWithForm(@Valid AccountDTO accountDTO, Errors errors) {
+        if (errors.hasErrors()) {
+            return "redirect:/sign-up-form";
+        }
+        accountRepository.save(accountDTO.toEntity(passwordEncoder.encode(accountDTO.getPassword())));
+        return "redirect:/sign-in";
     }
 
     @GetMapping("/test")

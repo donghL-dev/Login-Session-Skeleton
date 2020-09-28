@@ -9,11 +9,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -24,6 +28,7 @@ import javax.servlet.http.HttpSession;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -78,6 +83,16 @@ public class AccountControllerTest {
         ;
     }
 
+    @DisplayName("Form 회원가입 화면 조회 테스트")
+    @Test
+    public void getFormSignUp() throws Exception {
+        mockMvc.perform(get("/sign-up-form"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(view().name("account/sign-up-form"))
+        ;
+    }
+
     @DisplayName("회원가입 성공 테스트")
     @Test
     public void successSignUp() throws Exception {
@@ -96,6 +111,33 @@ public class AccountControllerTest {
                 .andDo(print())
                 .andExpect(status().isCreated())
         ;
+
+        String string = resultActions.andReturn().getResponse().getContentAsString();
+        String msg = "회원가입 성공!";
+        assertThat(string).contains(msg);
+
+        Account account = accountRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));
+        assertThat(email).isEqualTo(account.getEmail());
+        assertThat(password).isNotEqualTo(account.getPassword());
+    }
+
+    @DisplayName("Form 회원가입 성공 테스트")
+    @Test
+    public void successFormSignUp() throws Exception {
+        String email = "email@email.com";
+        String password = "password";
+
+        AccountDTO accountDTO = AccountDTO.builder()
+                .email(email)
+                .password(password)
+                .build();
+
+        ResultActions resultActions = mockMvc.perform(post("/sign-up-form")
+                .param("email", accountDTO.getEmail())
+                .param("password", accountDTO.getPassword())
+                .with(csrf()))
+                .andDo(print())
+                .andExpect(status().isCreated());
 
         String string = resultActions.andReturn().getResponse().getContentAsString();
         String msg = "회원가입 성공!";
@@ -162,6 +204,8 @@ public class AccountControllerTest {
                     .session((MockHttpSession) session))
                 .andDo(print())
                 .andExpect(status().isOk())
+                .andExpect(model().attributeExists("name"))
+                .andExpect(model().attribute("name", email))
                 .andExpect(view().name("index"));
     }
 
