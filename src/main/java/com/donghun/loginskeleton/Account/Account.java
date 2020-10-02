@@ -1,4 +1,4 @@
-package com.donghun.loginskeleton.Account;
+package com.donghun.loginskeleton.account;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -6,7 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.Entity;
@@ -64,4 +63,5 @@ public class Account implements UserDetails {
     public boolean isEnabled() {
         return true;
     }
+
 }

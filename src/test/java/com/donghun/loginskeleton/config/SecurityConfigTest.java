@@ -1,7 +1,7 @@
 package com.donghun.loginskeleton.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.donghun.loginskeleton.Account.dto.AccountDTO;
+import com.donghun.loginskeleton.account.dto.AccountDTO;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

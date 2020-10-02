@@ -1,23 +1,20 @@
-package com.donghun.loginskeleton.Account;
+package com.donghun.loginskeleton.account;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.donghun.loginskeleton.Account.dto.AccountDTO;
+import com.donghun.loginskeleton.account.dto.AccountDTO;
+import com.donghun.loginskeleton.common.AppProperties;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpSession;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -28,7 +25,6 @@ import javax.servlet.http.HttpSession;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestBuilders.formLogin;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -52,6 +48,16 @@ public class AccountControllerTest {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private AppProperties appProperties;
+
+    @DisplayName("AppProperties 테스트")
+    @Test
+    public void propertiesTest() {
+        assertThat(appProperties.getEmail()).isEqualTo("123@email.com");
+        assertThat(appProperties.getPassword()).isEqualTo("password");
+    }
 
     @DisplayName("인증 없이 메인화면에 접근하는 테스트")
     @Test
@@ -83,16 +89,6 @@ public class AccountControllerTest {
         ;
     }
 
-    @DisplayName("Form 회원가입 화면 조회 테스트")
-    @Test
-    public void getFormSignUp() throws Exception {
-        mockMvc.perform(get("/sign-up-form"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(view().name("account/sign-up-form"))
-        ;
-    }
-
     @DisplayName("회원가입 성공 테스트")
     @Test
     public void successSignUp() throws Exception {
@@ -111,33 +107,6 @@ public class AccountControllerTest {
                 .andDo(print())
                 .andExpect(status().isCreated())
         ;
-
-        String string = resultActions.andReturn().getResponse().getContentAsString();
-        String msg = "회원가입 성공!";
-        assertThat(string).contains(msg);
-
-        Account account = accountRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));
-        assertThat(email).isEqualTo(account.getEmail());
-        assertThat(password).isNotEqualTo(account.getPassword());
-    }
-
-    @DisplayName("Form 회원가입 성공 테스트")
-    @Test
-    public void successFormSignUp() throws Exception {
-        String email = "email@email.com";
-        String password = "password";
-
-        AccountDTO accountDTO = AccountDTO.builder()
-                .email(email)
-                .password(password)
-                .build();
-
-        ResultActions resultActions = mockMvc.perform(post("/sign-up-form")
-                .param("email", accountDTO.getEmail())
-                .param("password", accountDTO.getPassword())
-                .with(csrf()))
-                .andDo(print())
-                .andExpect(status().isCreated());
 
         String string = resultActions.andReturn().getResponse().getContentAsString();
         String msg = "회원가입 성공!";
@@ -249,7 +218,45 @@ public class AccountControllerTest {
                     .param("password", password)
                     .session((MockHttpSession) session)
                     .with(csrf()))
+                .andDo(print())
                 .andExpect(redirectedUrl("http://localhost/test"))
+                .andExpect(status().is3xxRedirection())
+        ;
+    }
+
+    @DisplayName("회원가입 성공 테스트 - form")
+    @Test
+    public void successSignUpForm() throws Exception {
+        String email = "123@email.com";
+        String password = "password";
+        accountRepository.deleteAll();
+
+        mockMvc.perform(post("/sign-up-form")
+                    .param("email", email)
+                    .param("password", password)
+                    .with(csrf()))
+                .andDo(print())
+                .andExpect(redirectedUrl("/sign-in"))
+                .andExpect(status().is3xxRedirection())
+        ;
+
+        Account account = accountRepository.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException(email));
+        assertThat(account.getEmail()).isEqualTo(email);
+        assertThat(account.getPassword()).isNotEqualTo(password);
+    }
+
+    @DisplayName("회원가입 실패 테스트 - form : 이메일 형식 오류")
+    @Test
+    public void failureSignUpForm() throws Exception {
+        String email = "123";
+        String password = "password";
+        // 이메일 형식 오류, 이하 나머지 valid 테스트 생략
+        mockMvc.perform(post("/sign-up-form")
+                    .param("email", email)
+                    .param("password", password)
+                    .with(csrf()))
+                .andDo(print())
+                .andExpect(view().name("redirect:/sign-up-form"))
                 .andExpect(status().is3xxRedirection())
         ;
     }
@@ -260,6 +267,46 @@ public class AccountControllerTest {
                 .email(email)
                 .password(passwordEncoder.encode(password))
                 .build());
+    }
+
+    @DisplayName("로그아웃 실패 테스트")
+    @Test
+    public void failureLogout() throws Exception {
+        mockMvc.perform(post("/logout"))
+                .andDo(print())
+                .andExpect(status().isForbidden());
+    }
+
+    @DisplayName("로그아웃 성공 테스트")
+    @Test
+    public void successLogout() throws Exception {
+        String email = "123@email.com";
+        String password = "password";
+        saveAccount(email, password);
+
+        ResultActions resultActions = mockMvc.perform(formLogin()
+                    .loginProcessingUrl("/sign-in")
+                    .user(email)
+                    .password(password))
+                .andDo(print())
+                .andExpect(redirectedUrl("/"))
+                .andExpect(status().is3xxRedirection())
+        ;
+
+        HttpSession session = resultActions.andReturn().getRequest().getSession();
+        assert session != null;
+
+        resultActions = mockMvc.perform(post("/logout")
+                    .session((MockHttpSession) session)
+                    .with(csrf()))
+                .andDo(print())
+                .andExpect(status().is3xxRedirection())
+        ;
+
+        String redirectedUrl = resultActions.andReturn().getResponse().getRedirectedUrl();
+        assert redirectedUrl != null;
+
+        assertThat(redirectedUrl).isEqualTo("/sign-in");
     }
 
 }

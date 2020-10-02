@@ -1,10 +1,10 @@
-package com.donghun.loginskeleton.Account;
+package com.donghun.loginskeleton.account;
 
-import com.donghun.loginskeleton.Account.dto.AccountDTO;
+import com.donghun.loginskeleton.account.dto.AccountDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,9 +23,9 @@ public class AccountController {
     private final PasswordEncoder passwordEncoder;
 
     @GetMapping("/")
-    public String getMain(Model model) {
-        Account user = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        model.addAttribute("name", user.getUsername());
+    public String getMain(Model model, @AuthenticationPrincipal Account account) {
+        // Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        model.addAttribute("name", account.getUsername());
         return "index";
     }
 
@@ -37,12 +37,6 @@ public class AccountController {
     @GetMapping("/sign-up")
     public String getSignUp() {
         return "account/sign-up";
-    }
-
-    @GetMapping("/sign-up-form")
-    public String getFormSignUp(Model model) {
-        model.addAttribute(new AccountDTO());
-        return "account/sign-up-form";
     }
 
     @PostMapping("/sign-up")
@@ -57,11 +51,15 @@ public class AccountController {
         return new ResponseEntity<>("{\"msg\" : \"회원가입 성공!\"}", HttpStatus.CREATED);
     }
 
+    @GetMapping("/sign-up-form")
+    public String getSignUpForm(Model model) {
+        model.addAttribute(new AccountDTO());
+        return "account/sign-up-form";
+    }
+
     @PostMapping("/sign-up-form")
-    public String signUpWithForm(@Valid AccountDTO accountDTO, Errors errors) {
-        if (errors.hasErrors()) {
-            return "redirect:/sign-up-form";
-        }
+    public String signUpForm(@Valid AccountDTO accountDTO, Errors errors) {
+        if (errors.hasErrors()) return "redirect:/sign-up-form";
         accountRepository.save(accountDTO.toEntity(passwordEncoder.encode(accountDTO.getPassword())));
         return "redirect:/sign-in";
     }

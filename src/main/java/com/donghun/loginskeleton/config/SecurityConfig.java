@@ -15,14 +15,23 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         http
                 .csrf()
+                    .ignoringAntMatchers("/h2-console/**")
+                    .and()
+                .headers()
+                    .frameOptions()
+                    .disable()
                     .and()
                 .authorizeRequests()
-                    .antMatchers( "/sign-up-form", "/sign-up").permitAll()
+                    .antMatchers("/sign-up", "/sign-up-form", "/h2-console/**").permitAll()
                     .anyRequest().authenticated()
                     .and()
                 .formLogin()
                     .loginPage("/sign-in")
                     .permitAll()
+                    .and()
+                .logout()
+                    .deleteCookies("JSESSIONID")
+                    .logoutSuccessUrl("/sign-in")
         ;
     }
 

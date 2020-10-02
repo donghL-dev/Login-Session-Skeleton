@@ -1,4 +1,4 @@
-package com.donghun.loginskeleton.Account;
+package com.donghun.loginskeleton.account;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 

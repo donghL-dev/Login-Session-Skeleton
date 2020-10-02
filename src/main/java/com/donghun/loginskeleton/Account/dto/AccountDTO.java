@@ -1,18 +1,17 @@
-package com.donghun.loginskeleton.Account.dto;
+package com.donghun.loginskeleton.account.dto;
 
-import com.donghun.loginskeleton.Account.Account;
+import com.donghun.loginskeleton.account.Account;
 import lombok.*;
 import org.hibernate.validator.constraints.Length;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 
-@ToString
-@Getter
-@Setter
-@Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
+@ToString
+@Getter @Setter
+@Builder
 public class AccountDTO {
 
     @NotBlank
