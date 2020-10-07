@@ -1,6 +1,5 @@
 package com.donghun.loginskeleton.account;
 
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.donghun.loginskeleton.account.dto.AccountDTO;
 import com.donghun.loginskeleton.common.AppProperties;

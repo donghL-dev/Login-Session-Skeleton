@@ -1,6 +1,7 @@
-package com.donghun.loginskeleton.account;
+package com.donghun.loginskeleton.account.dto;
 
-import com.donghun.loginskeleton.auth.dto.OAuthAttributes;
+import com.donghun.loginskeleton.account.Account;
+import com.donghun.loginskeleton.account.OAuthAttributes;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

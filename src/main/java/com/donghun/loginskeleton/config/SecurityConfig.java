@@ -1,6 +1,6 @@
 package com.donghun.loginskeleton.config;
 
-import com.donghun.loginskeleton.auth.CustomOAuth2UserService;
+import com.donghun.loginskeleton.account.CustomOAuth2UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Configuration;

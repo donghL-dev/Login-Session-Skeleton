@@ -1,6 +1,5 @@
-package com.donghun.loginskeleton.auth.dto;
+package com.donghun.loginskeleton.account;
 
-import com.donghun.loginskeleton.account.Account;
 import lombok.Builder;
 import lombok.Getter;
 

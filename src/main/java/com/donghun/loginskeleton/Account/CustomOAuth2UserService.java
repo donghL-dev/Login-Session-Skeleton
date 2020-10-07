@@ -1,9 +1,6 @@
-package com.donghun.loginskeleton.auth;
+package com.donghun.loginskeleton.account;
 
-import com.donghun.loginskeleton.account.Account;
-import com.donghun.loginskeleton.account.AccountAdapter;
-import com.donghun.loginskeleton.account.AccountRepository;
-import com.donghun.loginskeleton.auth.dto.OAuthAttributes;
+import com.donghun.loginskeleton.account.dto.AccountAdapter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
