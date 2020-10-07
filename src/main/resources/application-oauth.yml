@@ -1,0 +1,19 @@
+test:
+  email: 123@email.com
+  password: password
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 1
+            client-secret: 1
+            scope: profile, email
+
+#server:
+#  servlet:
+#    session:
+#      cookie:
+#        name: SKELETONSESSIONID
