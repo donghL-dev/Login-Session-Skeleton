@@ -1,4 +1,4 @@
-# Spring Security Login Skeleton
+# Login Session Skeleton
 - `Spring Security` 를 이용하여 로그인, 회원가입 기능을 구현을 통해 학습하기 위한 저장소입니다. (with [ber01](https://github.com/ber01/Spring-Security-Login-Skeleton))
 
 ## 목표
